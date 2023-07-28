@@ -11,9 +11,9 @@ public class MotionTest {
     Random random = new Random();
 
     @RepeatedTest(100)
-    public void createPosition() {
-        int dx = random.nextInt(100);
-        int dy = random.nextInt(100);
+    public void repeatedTestCreatePosition() {
+        final int dx = random.nextInt(100);
+        final int dy = random.nextInt(100);
 
         Motion motion = Motion.createPosition(dx, dy);
 
@@ -22,7 +22,7 @@ public class MotionTest {
     }
 
     @RepeatedTest(100)
-    public void addMotion() {
+    public void repeatedTestAddMotion() {
         int dx1 = random.nextInt(100);
         int dy1 = random.nextInt(100);
         int dx2 = random.nextInt(100);

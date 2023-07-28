@@ -34,6 +34,14 @@ public class Motion {
         return (int) Math.toDegrees(Math.atan2(dy, dx));
     }
 
+    public void turnDX() {
+        dx = -dx;
+    }
+
+    public void turnDY() {
+        dy = -dy;
+    }
+
     public void add(Motion other) {
         dx += other.getDX();
         dy += other.getDY();

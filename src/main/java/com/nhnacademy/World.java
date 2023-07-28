@@ -36,6 +36,7 @@ public class World extends JPanel {
 
     @Override
     public void paint(Graphics g) {
+        super.paint(g);
         for (int i = 0; i < getCount(); i++) {
             Regionable object = get(i);
 
