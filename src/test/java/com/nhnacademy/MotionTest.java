@@ -42,6 +42,5 @@ public class MotionTest {
         Motion motion = Motion.createPosition(30, 40);
 
         assertEquals(50, motion.getMagnitude());
-        // assertEquals(60, motion.getTheta());
     }
 }
