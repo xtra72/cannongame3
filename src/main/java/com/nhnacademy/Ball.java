@@ -33,6 +33,10 @@ public class Ball implements Regionable, Paintable {
         return color;
     }
 
+    void setLocation(Point newLocation) {
+        location = newLocation;
+    }
+
     @Override
     public Rectangle getRegion() {
         return new Rectangle((int) location.getX() - radius, (int) location.getY() - radius, 2 * radius, 2 * radius);
