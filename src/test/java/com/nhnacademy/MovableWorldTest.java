@@ -24,10 +24,11 @@ public class MovableWorldTest {
 
         MovableWorld world = new MovableWorld();
         world.setDT(100);
+        world.addEffect(Motion.createPosition(0, -2));
         frame.add(world);
 
         MovableBall ball = new MovableBall(new Point(WorldTest.FRAME_WIDTH / 2, WorldTest.FRAME_HEIGHT / 2), 50);
-        ball.setMotion(new Motion(10, 5));
+        ball.setMotion(new Motion(10, 2));
         world.add(ball);
 
         frame.setVisible(true);

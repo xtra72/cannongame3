@@ -2,11 +2,14 @@ package com.nhnacademy;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.function.Supplier;
 
 public class MovableBall extends Ball implements Movable {
     Motion motion = new Motion(0, 0);
     Thread thread;
     long dt = 0;
+    MovableWorld world;
+    Supplier<Motion> effects;
 
     public MovableBall(Point location, int radius) {
         super(location, radius);
@@ -43,6 +46,7 @@ public class MovableBall extends Ball implements Movable {
     public void run() {
         while (!Thread.interrupted()) {
             move();
+            applyEffect();
             try {
                 Thread.sleep(dt);
             } catch (InterruptedException e) {
@@ -71,4 +75,11 @@ public class MovableBall extends Ball implements Movable {
         thread.interrupt();
     }
 
+    public void addEffect(Supplier<Motion> effects) {
+        this.effects = effects;
+    }
+
+    public void applyEffect() {
+        getMotion().add(effects.get());
+    }
 }

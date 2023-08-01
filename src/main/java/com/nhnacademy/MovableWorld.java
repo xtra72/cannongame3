@@ -30,6 +30,23 @@ public class MovableWorld extends World implements Runnable {
         repaint();
     }
 
+    @Override
+    public void add(Regionable object) {
+        super.add(object);
+
+        if (object instanceof Movable) {
+            ((Movable) object).addEffect(() -> {
+                Motion effect = Motion.createPosition(0, 0);
+
+                for (Motion e : effectList) {
+                    effect.add(e);
+                }
+
+                return effect;
+            });
+        }
+    }
+
     public void start() {
         thread.start();
     }

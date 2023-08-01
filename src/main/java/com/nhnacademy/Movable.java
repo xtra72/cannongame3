@@ -1,6 +1,7 @@
 package com.nhnacademy;
 
 import java.awt.Point;
+import java.util.function.Supplier;
 
 public interface Movable extends Regionable, Runnable {
     public void setMotion(Motion motion);
@@ -18,4 +19,6 @@ public interface Movable extends Regionable, Runnable {
     public void start();
 
     public void stop();
+
+    public void addEffect(Supplier<Motion> effects);
 }
