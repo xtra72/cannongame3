@@ -1,5 +1,6 @@
 package com.nhnacademy;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -14,7 +15,6 @@ public class BoundedBallTest {
 
         JFrame frame = new JFrame();
         frame.setSize(WorldTest.FRAME_WIDTH, WorldTest.FRAME_HEIGHT);
-        frame.setVisible(true);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -26,11 +26,14 @@ public class BoundedBallTest {
         MovableWorld world = new MovableWorld();
         world.setDT(100);
         frame.add(world);
+        frame.setVisible(true);
 
-        BoundedBall ball = new BoundedBall(new Point(WorldTest.FRAME_WIDTH / 2, WorldTest.FRAME_HEIGHT / 2), 50);
+        BoundedBall ball = new BoundedBall(new Point(WorldTest.FRAME_WIDTH / 2, WorldTest.FRAME_HEIGHT / 2), 30);
         ball.setMotion(new Motion(10, 5));
         ball.setBounds(world.getBounds());
         world.add(ball);
+
+        world.add(new Ball(new Point(100, 100), 20, Color.RED));
 
         frame.setVisible(true);
 
