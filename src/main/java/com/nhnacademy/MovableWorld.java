@@ -45,6 +45,18 @@ public class MovableWorld extends World implements Runnable {
                 return effect;
             });
         }
+
+        for (int i = 0; i < getCount(); i++) {
+            Regionable otherObject = get(i);
+            if (object != otherObject) {
+                if (object instanceof Bounded) {
+                    ((Bounded) object).addRegion(otherObject);
+                }
+                if (otherObject instanceof Bounded) {
+                    ((Bounded) otherObject).addRegion(object);
+                }
+            }
+        }
     }
 
     public void start() {

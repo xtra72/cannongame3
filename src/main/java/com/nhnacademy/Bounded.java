@@ -6,4 +6,6 @@ public interface Bounded {
     public Rectangle getBounds();
 
     public void setBounds(Rectangle bounds);
+
+    public void addRegion(Regionable region);
 }
