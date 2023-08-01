@@ -4,6 +4,11 @@ public class Motion {
     int dx;
     int dy;
 
+    public Motion(Motion other) {
+        dx = other.getDX();
+        dy = other.getDY();
+    }
+
     Motion(int dx, int dy) {
         this.dx = dx;
         this.dy = dy;
@@ -16,6 +21,11 @@ public class Motion {
     public static Motion createDisplacement(int magnitude, int theta) {
         return new Motion((int) (magnitude * Math.cos(Math.toRadians(theta))),
                 (int) (magnitude * Math.sin(Math.toRadians(theta))));
+    }
+
+    public void set(Motion other) {
+        dx = other.getDX();
+        dy = other.getDY();
     }
 
     public int getDX() {

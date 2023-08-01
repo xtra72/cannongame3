@@ -3,9 +3,11 @@ package com.nhnacademy;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.function.Function;
 
 public class BoundedBall extends MovableBall implements Bounded {
     Rectangle bounds;
+    Function<Movable, Motion> obstacles;
 
     public BoundedBall(Point location, int radius) {
         super(location, radius);
@@ -56,5 +58,11 @@ public class BoundedBall extends MovableBall implements Bounded {
         if (isOutOfBounds()) {
             bounce();
         }
+        getMotion().set(obstacles.apply(this));
+    }
+
+    @Override
+    public void setObstacle(Function<Movable, Motion> obstacles) {
+        this.obstacles = obstacles;
     }
 }
