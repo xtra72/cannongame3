@@ -1,5 +1,6 @@
 package com.nhnacademy;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,30 @@ public class MovableWorld extends World implements Runnable {
                 }
 
                 return effect;
+            });
+        }
+
+        if (object instanceof Bounded) {
+            ((Bounded) object).setObstacle((target) -> {
+                Motion motion = new Motion(target.getMotion());
+
+                for (Regionable region : objectList) {
+                    if ((object != region) &&
+                            (target.getRegion().intersects(region.getRegion()))) {
+                        Rectangle intersection = target.getRegion().intersection(region.getRegion());
+
+                        if (intersection.getWidth() != target.getRegion().getWidth()) {
+                            motion.turnDX();
+                        }
+
+                        if (intersection.getHeight() != target.getRegion().getHeight()) {
+                            motion.turnDY();
+                        }
+
+                    }
+                }
+
+                return motion;
             });
         }
     }
