@@ -1,36 +1,67 @@
 package com.nhnacademy;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.Point;
 import java.awt.Rectangle;
 
 public class BoundedWorld extends MovableWorld {
-    boolean outOfBounds(Regionable object) {
-        Rectangle intersection = getBounds().intersection(object.getRegion());
+    Regionable leftWall;
+    Regionable rightWall;
+    Regionable topWall;
+    Regionable bottomWall;
 
-        return intersection.getWidth() != object.getRegion().getWidth()
-                || intersection.getHeight() != object.getRegion().getHeight();
-    }
+    public BoundedWorld() {
+        super();
+        leftWall = new Box(new Point(-50, 0), 100, 200);
+        rightWall = new Box(new Point(50, 0), 100, 200);
+        topWall = new Box(new Point(0, -50), 200, 100);
+        bottomWall = new Box(new Point(0, 50), 200, 100);
+        bottomWall.setType(Regionable.Type.WETLAND);
 
-    void bounce(Movable object) {
-        if ((object.getRegion().getMinX() < getBounds().getMinX())
-                || getBounds().getMaxX() < object.getRegion().getMaxX()) {
-            object.getMotion().turnDX();
-        }
+        add(leftWall);
+        add(rightWall);
+        add(topWall);
+        add(bottomWall);
 
-        if ((object.getRegion().getMinY() < getBounds().getMinY())
-                || getBounds().getMaxY() < object.getRegion().getMaxY()) {
-            object.getMotion().turnDY();
-        }
-    }
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                remove(leftWall);
+                remove(rightWall);
+                remove(topWall);
+                remove(bottomWall);
 
-    @Override
-    void move() {
-        super.move();
-
-        for (int i = 0; i < getCount(); i++) {
-            Regionable object = get(i);
-            if ((object instanceof Movable) && outOfBounds(object)) {
-                bounce((Movable) object);
+                leftWall = new Box(new Point(-50, (int) getBounds().getHeight() / 2), 100,
+                        (int) getBounds().getHeight() + 200);
+                rightWall = new Box(new Point((int) getBounds().getWidth() + 50, (int) getBounds().getHeight() / 2),
+                        100,
+                        (int) getBounds().getHeight() + 200);
+                topWall = new Box(new Point((int) getBounds().getWidth() / 2, -50), (int) getBounds().getWidth() + 200,
+                        100);
+                bottomWall = new Box(new Point((int) getBounds().getWidth() / 2, (int) getBounds().getHeight() + 50),
+                        (int) getBounds().getWidth() + 200,
+                        100);
+                bottomWall.setType(Regionable.Type.WETLAND);
+                add(leftWall);
+                add(rightWall);
+                add(topWall);
+                add(bottomWall);
+                System.out.println("Resized to " + e.getComponent().getSize());
             }
-        }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                System.out.println("Moved to " + e.getComponent().getLocation());
+            }
+        });
     }
+
+    // @Override
+    // public void add(Regionable object) {
+    // super.add(object);
+    // if (object instanceof Bounded) {
+    // ((Bounded) object).setBounds(getBounds());
+    // }
+    // }
 }

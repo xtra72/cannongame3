@@ -8,4 +8,6 @@ public interface Bounded {
     public void setBounds(Rectangle bounds);
 
     public void addRegion(Regionable region);
+
+    public void addCollisionEventListener(CollisionEventListener listener);
 }

@@ -18,6 +18,11 @@ public class Motion {
                 (int) (magnitude * Math.sin(Math.toRadians(theta))));
     }
 
+    public void set(Motion other) {
+        dx = other.getDX();
+        dy = other.getDY();
+    }
+
     public int getDX() {
         return dx;
     }

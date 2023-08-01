@@ -5,22 +5,24 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-public class Ball implements Regionable, Paintable {
+public class Box implements Regionable, Paintable {
     static final Color DEFAULT_COLOR = Color.BLUE;
     static int ballCount = 0;
     int id;
     Point location;
-    int radius;
+    int width;
+    int height;
     Color color;
     Type type;
 
-    public Ball(Point location, int radius) {
-        this(location, radius, DEFAULT_COLOR);
+    public Box(Point location, int width, int height) {
+        this(location, width, height, DEFAULT_COLOR);
     }
 
-    public Ball(Point location, int radius, Color color) {
+    public Box(Point location, int width, int height, Color color) {
         this.location = location;
-        this.radius = radius;
+        this.width = width;
+        this.height = height;
         this.color = color;
         ++ballCount;
         this.id = ballCount;
@@ -35,8 +37,12 @@ public class Ball implements Regionable, Paintable {
         return location;
     }
 
-    public int getRadius() {
-        return radius;
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public Color getColor() {
@@ -49,14 +55,14 @@ public class Ball implements Regionable, Paintable {
 
     @Override
     public Rectangle getRegion() {
-        return new Rectangle((int) location.getX() - radius, (int) location.getY() - radius, 2 * radius, 2 * radius);
+        return new Rectangle((int) location.getX() - width / 2, (int) location.getY() - height / 2, width, height);
     }
 
     @Override
     public void paint(Graphics g) {
         Color oldColor = g.getColor();
         g.setColor(color);
-        g.fillOval((int) location.getX() - radius, (int) location.getY() - radius, 2 * radius, 2 * radius);
+        g.fillOval((int) location.getX() - width / 2, (int) location.getY() - height / 2, width, height);
         g.setColor(oldColor);
     }
 
