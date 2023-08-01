@@ -1,15 +1,20 @@
 package com.nhnacademy;
 
-public class MovableWorld extends World {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MovableWorld extends World implements Runnable {
+    Thread thread;
     long dt;
     int moveCount;
-    int maxMoveCount;
+    List<Motion> effectList;
 
     public MovableWorld() {
         super();
+        thread = new Thread(this, this.getClass().getSimpleName());
         dt = 1000;
         moveCount = 0;
-        maxMoveCount = 0;
+        effectList = new ArrayList<>();
     }
 
     void move() {
@@ -17,15 +22,35 @@ public class MovableWorld extends World {
             Regionable object = get(i);
             if (object instanceof Movable) {
                 ((Movable) object).move();
+                for (Motion effect : effectList) {
+                    ((Movable) object).getMotion().add(effect);
+                }
             }
         }
         repaint();
     }
 
+    public void start() {
+        thread.start();
+    }
+
+    public void stop() {
+        thread.interrupt();
+    }
+
+    @Override
     public void run() {
-        for (int i = 0; (maxMoveCount == 0) || (i < getMaxMoveCount()); i++) {
-            move();
+        for (int i = 0; i < getCount(); i++) {
+            Regionable object = get(i);
+            if (object instanceof Movable) {
+                ((Movable) object).setDT(getDT());
+                ((Movable) object).start();
+            }
+        }
+
+        while (!Thread.interrupted()) {
             try {
+                repaint();
                 Thread.sleep(getDT());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -45,11 +70,25 @@ public class MovableWorld extends World {
         return moveCount;
     }
 
-    public int getMaxMoveCount() {
-        return maxMoveCount;
+    public void addEffect(Motion effect) {
+        if (!effectList.contains(effect)) {
+            effectList.add(effect);
+        }
     }
 
-    public void setMaxMoveCount(int maxMoveCount) {
-        this.maxMoveCount = maxMoveCount;
+    public int getEffectCount() {
+        return effectList.size();
+    }
+
+    public Motion getEffect(int index) {
+        return effectList.get(index);
+    }
+
+    public void removeEffect(int index) {
+        effectList.remove(index);
+    }
+
+    public void removeEffect(Motion effect) {
+        effectList.remove(effect);
     }
 }

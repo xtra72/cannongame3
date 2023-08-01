@@ -7,6 +7,8 @@ import java.awt.Rectangle;
 
 public class Ball implements Regionable, Paintable {
     static final Color DEFAULT_COLOR = Color.BLUE;
+    static int ballCount = 0;
+    int id;
     Point location;
     int radius;
     Color color;
@@ -19,6 +21,12 @@ public class Ball implements Regionable, Paintable {
         this.location = location;
         this.radius = radius;
         this.color = color;
+        ++ballCount;
+        this.id = ballCount;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public Point getLocation() {

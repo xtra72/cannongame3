@@ -6,7 +6,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
-public class MovableWorldTest {
+public class BoundedWorldTest2 {
     static final int FRAME_WIDTH = 500;
     static final int FRAME_HEIGHT = 300;
 
@@ -22,8 +22,10 @@ public class MovableWorldTest {
             }
         });
 
-        MovableWorld world = new MovableWorld();
+        BoundedWorld world = new BoundedWorld();
         world.setDT(100);
+        world.addEffect(Motion.createPosition(0, -2));
+        world.addEffect(Motion.createPosition(-2, 0));
         frame.add(world);
 
         MovableBall ball = new MovableBall(new Point(WorldTest.FRAME_WIDTH / 2, WorldTest.FRAME_HEIGHT / 2), 50);
@@ -32,7 +34,7 @@ public class MovableWorldTest {
 
         frame.setVisible(true);
 
-        world.start();
+        world.run();
 
     }
 }
