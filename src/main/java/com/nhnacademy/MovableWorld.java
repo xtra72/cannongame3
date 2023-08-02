@@ -35,6 +35,7 @@ public class MovableWorld extends World implements Runnable {
         super.add(object);
 
         if (object instanceof Movable) {
+            ((Movable) object).setDT(dt);
             ((Movable) object).addEffect(() -> {
                 Motion effect = Motion.createPosition(0, 0);
 
@@ -44,6 +45,10 @@ public class MovableWorld extends World implements Runnable {
 
                 return effect;
             });
+
+            if (thread.isAlive()) {
+                ((Movable) object).start();
+            }
         }
 
         for (int i = 0; i < getCount(); i++) {
@@ -57,6 +62,7 @@ public class MovableWorld extends World implements Runnable {
                 }
             }
         }
+
     }
 
     public void start() {

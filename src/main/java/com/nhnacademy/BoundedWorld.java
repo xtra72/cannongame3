@@ -23,14 +23,11 @@ public class BoundedWorld extends MovableWorld {
     }
 
     @Override
-    void move() {
-        super.move();
+    public void add(Regionable object) {
+        super.add(object);
 
-        for (int i = 0; i < getCount(); i++) {
-            Regionable object = get(i);
-            if ((object instanceof Movable) && outOfBounds(object)) {
-                bounce((Movable) object);
-            }
+        if (object instanceof Bounded) {
+            ((Bounded) object).setBounds(getBounds());
         }
     }
 }
