@@ -18,7 +18,7 @@ public class MovableBall extends Ball implements Movable {
 
     public MovableBall(Point location, int radius, Color color) {
         super(location, radius, color);
-        thread = new Thread(this, thread.getClass().getSimpleName() + "-" + getId());
+        thread = new Thread(this, this.getClass().getSimpleName() + "-" + getId());
     }
 
     @Override

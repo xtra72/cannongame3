@@ -65,6 +65,19 @@ public class MovableWorld extends World implements Runnable {
 
     }
 
+    @Override
+    public void remove(Regionable object) {
+        super.remove(object);
+
+        for (int i = 0; i < getCount(); i++) {
+            Regionable otherObject = get(i);
+            if (otherObject instanceof Bounded) {
+                ((Bounded) otherObject).removeRegion(object);
+            }
+        }
+
+    }
+
     public void start() {
         thread.start();
     }

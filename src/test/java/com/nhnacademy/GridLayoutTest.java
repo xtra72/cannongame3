@@ -33,7 +33,7 @@ public class GridLayoutTest {
         frame.add(textField, constraints);
 
         button = new JButton("7");
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -45,7 +45,7 @@ public class GridLayoutTest {
         button = new JButton("8");
         constraints.gridx = 1;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -53,7 +53,7 @@ public class GridLayoutTest {
         button = new JButton("9");
         constraints.gridx = 2;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -61,7 +61,7 @@ public class GridLayoutTest {
         button = new JButton("+");
         constraints.gridx = 3;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             if (state == 0) {
                 operator = "+";
                 state = 1;
@@ -73,7 +73,7 @@ public class GridLayoutTest {
         constraints.gridx = 0;
         constraints.gridy = 2;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -82,7 +82,7 @@ public class GridLayoutTest {
         constraints.gridx = 1;
         constraints.gridy = 2;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -90,7 +90,7 @@ public class GridLayoutTest {
         button = new JButton("6");
         constraints.gridx = 2;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -98,7 +98,7 @@ public class GridLayoutTest {
         button = new JButton("-");
         constraints.gridx = 3;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             if (state == 0) {
                 operator = "-";
                 state = 1;
@@ -110,7 +110,7 @@ public class GridLayoutTest {
         constraints.gridx = 0;
         constraints.gridy = 3;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -118,7 +118,7 @@ public class GridLayoutTest {
         button = new JButton("2");
         constraints.gridx = 1;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -126,7 +126,7 @@ public class GridLayoutTest {
         button = new JButton("3");
         constraints.gridx = 2;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -134,7 +134,7 @@ public class GridLayoutTest {
         button = new JButton("*");
         constraints.gridx = 3;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             if (state == 0) {
                 operator = "*";
                 state = 1;
@@ -146,7 +146,7 @@ public class GridLayoutTest {
         constraints.gridx = 0;
         constraints.gridy = 4;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[state] = operand[state] + ((JButton) e.getSource()).getText();
             textField.setText(operand[state]);
         });
@@ -154,7 +154,7 @@ public class GridLayoutTest {
         button = new JButton("/");
         constraints.gridx = 3;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             if (state == 0) {
                 operator = "/";
                 state = 1;
@@ -167,7 +167,7 @@ public class GridLayoutTest {
         constraints.gridwidth = 2;
         constraints.gridy = 5;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             if (state == 1) {
                 int value1 = Integer.parseInt(operand[0]);
                 int value2 = Integer.parseInt(operand[1]);
@@ -203,7 +203,7 @@ public class GridLayoutTest {
         constraints.gridx = 3;
         constraints.gridwidth = 1;
         frame.add(button, constraints);
-        button.addActionListener((e) -> {
+        button.addActionListener(e -> {
             operand[0] = "";
             operator = "";
             operand[1] = "";

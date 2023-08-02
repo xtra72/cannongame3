@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -35,15 +36,25 @@ public class CannonGame extends JFrame implements Runnable {
     long dt = DEFAULT_DELTA_TIME;
     int angle = DEFAULT_ANGLE;
     int power = DEFAULT_POWER;
-    int wind = DEFAULT_WIND;
     Point initialLocation;
     JSlider windSlider;
+    JSlider angleSlider;
+    JSlider powerSlider;
+    Motion wind;
+    Motion gravity;
+    Random random;
+    Regionable target;
+    Color[] colors = { Color.BLUE, Color.RED, Color.YELLOW, Color.GRAY,
+            Color.GREEN, Color.PINK, Color.MAGENTA };
 
     public CannonGame() {
         super();
         thread = new Thread(this);
         logger = LogManager.getLogger(this.getClass().getSimpleName());
         initialLocation = new Point(50, 550);
+        wind = Motion.createDisplacement(DEFAULT_WIND, 0);
+        gravity = Motion.createDisplacement(1, 90);
+        random = new Random();
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -61,28 +72,59 @@ public class CannonGame extends JFrame implements Runnable {
         world = new BoundedWorld();
         world.setBackground(Color.GRAY);
         world.setBounds(0, 0, 900, 600);
-        world.setDT(10);
+        world.setDT(dt);
+        world.addEffect(wind);
+        world.addEffect(gravity);
         add(world);
+
+        target = new Ball(new Point(850, 550), 30, Color.RED);
+        target.setType(Regionable.Type.TARGET);
+        world.add(target);
+
+        world.add(new Ball(new Point(450, 250), 40, Color.GREEN));
 
         JButton fireButton = new JButton("Fire!!!");
         fireButton.setBounds(0, 600, 100, 100);
         fireButton.addActionListener(e -> {
-            BoundedBall ball = new BoundedBall(initialLocation, 20);
+            int colorIndex = random.nextInt(colors.length);
+            BoundedBall ball = new BoundedBall(initialLocation, 20, colors[colorIndex]);
             ball.setMotion(Motion.createDisplacement(power, -angle));
+            ball.addCollisionEventListener(e1 -> {
+                Regionable destination = (Regionable) e1.getDestination();
+                if (destination == target) {
+                    world.remove(target);
+                }
+            });
+
             world.add(ball);
         });
         add(fireButton);
 
         JButton clearButton = new JButton("Clear");
         clearButton.setBounds(100, 600, 100, 100);
-        clearButton.addActionListener(e -> logger.trace("Click! clear button"));
+        clearButton.addActionListener(e -> world.clear());
         add(clearButton);
 
         JTextField angleValue = new JTextField(angle + "");
         angleValue.setBounds(900, 600, 100, 50);
+        angleValue.addActionListener(e -> {
+            try {
+                int value = Integer.parseInt(((JTextField) e.getSource()).getText());
+                if (value < ANGLE_MIN || ANGLE_MAX < value) {
+                    logger.warn("Angle out of range : {} ", value);
+                    throw new NumberFormatException();
+                }
+
+                angle = Integer.parseInt(((JTextField) e.getSource()).getText());
+                angleSlider.setValue(angle);
+            } catch (NumberFormatException ignore) {
+                ((JTextField) e.getSource()).setText(angle + "");
+            }
+        });
+
         add(angleValue);
 
-        JSlider angleSlider = new JSlider(SwingConstants.VERTICAL, ANGLE_MIN, ANGLE_MAX, angle);
+        angleSlider = new JSlider(SwingConstants.VERTICAL, ANGLE_MIN, ANGLE_MAX, angle);
         angleSlider.setBounds(900, 0, 100, 600);
         angleSlider.setMajorTickSpacing(10);
         angleSlider.setMinorTickSpacing(2);
@@ -101,9 +143,23 @@ public class CannonGame extends JFrame implements Runnable {
 
         JTextField powerValue = new JTextField(power + "");
         powerValue.setBounds(350, 600, 100, 50);
+        powerValue.addActionListener(e -> {
+            try {
+                int value = Integer.parseInt(((JTextField) e.getSource()).getText());
+                if (value < POWER_MIN || POWER_MAX < value) {
+                    logger.warn("power out of range : {} ", value);
+                    throw new NumberFormatException();
+                }
+
+                power = Integer.parseInt(((JTextField) e.getSource()).getText());
+                powerSlider.setValue(power);
+            } catch (NumberFormatException ignore) {
+                ((JTextField) e.getSource()).setText(power + "");
+            }
+        });
         add(powerValue);
 
-        JSlider powerSlider = new JSlider(SwingConstants.HORIZONTAL, POWER_MIN, POWER_MAX, power);
+        powerSlider = new JSlider(SwingConstants.HORIZONTAL, POWER_MIN, POWER_MAX, power);
         powerSlider.setBounds(200, 650, 300, 50);
         powerSlider.setMajorTickSpacing(10);
         powerSlider.setMinorTickSpacing(2);
@@ -125,8 +181,8 @@ public class CannonGame extends JFrame implements Runnable {
         windValue.addActionListener(e -> {
             try {
                 int value = Integer.parseInt(((JTextField) e.getSource()).getText());
-                wind = value;
-                windSlider.setValue(wind);
+                wind.set(Motion.createDisplacement(value, 0));
+                windSlider.setValue(wind.getMagnitude());
             } catch (NumberFormatException ignore) {
                 logger.warn("invalid input : " + ((JTextField) e.getSource()).getText());
             }
@@ -134,7 +190,7 @@ public class CannonGame extends JFrame implements Runnable {
 
         add(windValue);
 
-        windSlider = new JSlider(SwingConstants.HORIZONTAL, WIND_MIN, WIND_MAX, wind);
+        windSlider = new JSlider(SwingConstants.HORIZONTAL, WIND_MIN, WIND_MAX, wind.getMagnitude());
         windSlider.setBounds(500, 650, 300, 50);
         windSlider.setMajorTickSpacing(10);
         windSlider.setMinorTickSpacing(2);
@@ -142,8 +198,8 @@ public class CannonGame extends JFrame implements Runnable {
         windSlider.setPaintTicks(true);
         windSlider.setPaintTrack(true);
         windSlider.addChangeListener(e -> {
-            wind = ((JSlider) e.getSource()).getValue();
-            windValue.setText(String.valueOf(wind));
+            wind.set(Motion.createDisplacement(((JSlider) e.getSource()).getValue(), 0));
+            windValue.setText(String.valueOf(wind.getMagnitude()));
         });
         add(windSlider);
 
@@ -175,6 +231,7 @@ public class CannonGame extends JFrame implements Runnable {
     }
 
     public void process() {
+        //
     }
 
     public void postprocess() {

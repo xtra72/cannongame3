@@ -44,13 +44,24 @@ public class BoundedBall extends MovableBall implements Bounded {
     }
 
     void bounce() {
-        if ((getRegion().getMinX() < getBounds().getMinX())
-                || (getBounds().getMaxX() < getRegion().getMaxX())) {
+        if (getRegion().getMinX() < getBounds().getMinX()) {
+            Point newLocation = new Point((int) getBounds().getMinX() + getRadius(),
+                    (int) getLocation().getY());
+            setLocation(newLocation);
+            getMotion().turnDX();
+        } else if (getBounds().getMaxX() < getRegion().getMaxX()) {
+            setLocation(new Point((int) getBounds().getMaxX() - getRadius(),
+                    (int) getLocation().getY()));
             getMotion().turnDX();
         }
 
-        if ((getRegion().getMinY() < getBounds().getMinY())
-                || (getBounds().getMaxY() < getRegion().getMaxY())) {
+        if (getRegion().getMinY() < getBounds().getMinY()) {
+            setLocation(new Point((int) getLocation().getX(),
+                    (int) getBounds().getMinY() + getRadius()));
+            getMotion().turnDY();
+        } else if (getBounds().getMaxY() < getRegion().getMaxY()) {
+            setLocation(new Point((int) getLocation().getX(),
+                    (int) getBounds().getMaxY() - getRadius()));
             getMotion().turnDY();
         }
     }
@@ -58,6 +69,12 @@ public class BoundedBall extends MovableBall implements Bounded {
     public void addRegion(Regionable regionable) {
         if ((this != regionable) && !regionableList.contains(regionable)) {
             regionableList.add(regionable);
+        }
+    }
+
+    public void removeRegion(Regionable regionable) {
+        if ((this != regionable) && regionableList.contains(regionable)) {
+            regionableList.remove(regionable);
         }
     }
 
@@ -70,14 +87,26 @@ public class BoundedBall extends MovableBall implements Bounded {
 
         for (Regionable regionable : regionableList) {
             if (getRegion().intersects(regionable.getRegion())) {
+                boolean collision = false;
                 Rectangle intersection = getRegion().intersection(regionable.getRegion());
 
                 if (intersection.getWidth() != getRegion().getWidth()) {
+                    collision = true;
                     getMotion().turnDX();
                 }
 
                 if (intersection.getHeight() != getRegion().getHeight()) {
+                    collision = true;
                     getMotion().turnDY();
+                }
+
+                if (collision) {
+                    logger.trace("Collision target!!!");
+
+                    CollisionEventListener[] listeners = eventListenerList.getListeners(CollisionEventListener.class);
+                    for (CollisionEventListener listener : listeners) {
+                        listener.collisionEvent(new CollisionEvent(this, regionable));
+                    }
                 }
             }
         }

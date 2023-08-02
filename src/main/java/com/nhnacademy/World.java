@@ -34,6 +34,21 @@ public class World extends JPanel {
         objectList.remove(index);
     }
 
+    public void clear() {
+        List<Regionable> removeObjectList = new ArrayList<>();
+
+        for (Regionable object : objectList) {
+            if (object instanceof Movable) {
+                removeObjectList.add(object);
+            }
+        }
+        for (Regionable object : removeObjectList) {
+            ((Movable) object).stop();
+            objectList.remove(object);
+        }
+        repaint();
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
