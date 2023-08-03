@@ -43,7 +43,9 @@ public class CannonGame extends JFrame implements Runnable {
     long dt = DEFAULT_DELTA_TIME;
     Point initialLocation;
     JSlider windSlider;
+    JTextField angleValue;
     JSlider angleSlider;
+    JTextField powerValue;
     JSlider powerSlider;
     JSlider reflectivitySlider;
     JTextField scoreValue;
@@ -81,25 +83,6 @@ public class CannonGame extends JFrame implements Runnable {
         setVisible(true);
         setVisible(false);
 
-        addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-                logger.trace(e);
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                logger.trace(e);
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                logger.trace(e);
-            }
-
-        });
-
         world = new BoundedWorld();
         world.setBackground(Color.GRAY);
         world.setBounds(ratedX(0), ratedY(10), ratedWidth(90), ratedHeight(70));
@@ -112,48 +95,41 @@ public class CannonGame extends JFrame implements Runnable {
 
             @Override
             public void keyTyped(KeyEvent e) {
-                logger.trace(e);
+                logger.error(e);
             }
 
             @Override
             public void keyPressed(KeyEvent e) {
-                logger.trace(e);
+                if ((e.getKeyCode() == 38) && (ANGLE_MIN < power && power < ANGLE_MAX)) {
+                    theta++;
+                    angleValue.setText(theta + "");
+                    angleSlider.setValue(theta);
+                } else if ((e.getKeyCode() == 40) && (ANGLE_MIN < power && power < ANGLE_MAX)) {
+                    theta--;
+                    angleValue.setText(theta + "");
+                    angleSlider.setValue(theta);
+                } else if ((e.getKeyCode() == 39) && (POWER_MIN < power && power < POWER_MAX)) {
+                    power++;
+                    powerValue.setText(power + "");
+                    powerSlider.setValue(power);
+                } else if ((e.getKeyCode() == 37) && (POWER_MIN < power && power < POWER_MAX)) {
+                    power--;
+                    powerValue.setText(power + "");
+                    powerSlider.setValue(power);
+                } else if (e.getKeyCode() == 10) {
+                    fire();
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                logger.trace(e);
+                logger.error(e);
             }
 
         });
 
-        world.addMouseListener(new MouseListener() {
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                logger.trace(e);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                logger.trace(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                logger.trace(e);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
-        });
-        cannon = (Cannon) world.add(new Cannon(new Point(ratedX(2), ratedY(75)), ratedWidth(5)));
+        initialLocation = new Point(ratedX(7), ratedY(65));
+        cannon = (Cannon) world.add(new Cannon(new Point(ratedX(2), ratedY(65)), ratedWidth(5)));
         target = world
                 .add(new BoundedBox(new Point(ratedX(70), ratedY(65)), ratedWidth(5), ratedHeight(5), Color.GREEN,
                         Regionable.Type.TARGET));
@@ -168,30 +144,13 @@ public class CannonGame extends JFrame implements Runnable {
 
         JButton fireButton = new JButton("Fire!!!");
         fireButton.setBounds(ratedX(1), ratedY(82), ratedWidth(8), ratedHeight(5));
-        fireButton.addActionListener(e -> {
-            int colorIndex = random.nextInt(colors.length);
-            BoundedBall ball = new BoundedBall(initialLocation, 10, colors[colorIndex]);
-            ball.setMotion(Motion.createDisplacement(power, -theta));
-            System.out.println("( " + ball.getMotion().getDX() + ", " + ball.getMotion().getDY() + " )");
-            ball.addCollisionEventListener(e1 -> {
-                Regionable destination = (Regionable) e1.getDestination();
-                if (destination == target) {
-                    addScore(1);
-                } else if ((e1.getSource() instanceof Bounded)
-                        && (e1.getSource() instanceof Movable)
-                        && (destination.getType() == Regionable.Type.WETLAND)) {
-                    ((Movable) e1.getSource()).getMotion().multiply(reflectivity / 100d);
-                    if (((Movable) e1.getSource()).getMotion().getMagnitude() < 1) {
-                        world.remove((Regionable) e1.getSource());
-                    }
-                }
-            });
+        fireButton.setFocusable(false);
+        fireButton.addActionListener(e -> fire());
 
-            world.add(ball);
-        });
         add(fireButton);
 
         JButton clearButton = new JButton("Clear");
+        clearButton.setFocusable(false);
         clearButton.setBounds(ratedX(11), ratedY(82), ratedWidth(8), ratedHeight(5));
         clearButton.addActionListener(e -> world.clear());
         add(clearButton);
@@ -201,6 +160,7 @@ public class CannonGame extends JFrame implements Runnable {
         add(scoreLabel);
 
         scoreValue = new JTextField(totalScore + "");
+        scoreValue.setFocusable(false);
         scoreValue.setHorizontalAlignment(SwingConstants.RIGHT);
         scoreValue.setEditable(false);
         scoreValue.setBounds(ratedX(50), ratedY(5), ratedWidth(6), ratedHeight(4));
@@ -210,7 +170,8 @@ public class CannonGame extends JFrame implements Runnable {
         angleLabel.setBounds(ratedX(84), ratedY(81), ratedWidth(6), ratedHeight(4));
         add(angleLabel);
 
-        JTextField angleValue = new JTextField(theta + "");
+        angleValue = new JTextField(theta + "");
+        angleValue.setFocusable(false);
         angleValue.setHorizontalAlignment(SwingConstants.RIGHT);
         angleValue.setBounds(ratedX(90), ratedY(81), ratedWidth(6), ratedHeight(4));
         angleValue.addActionListener(event -> {
@@ -253,7 +214,8 @@ public class CannonGame extends JFrame implements Runnable {
         powerLabel.setBounds(ratedX(24), ratedY(81), ratedWidth(6), ratedHeight(4));
         add(powerLabel);
 
-        JTextField powerValue = new JTextField(power + "");
+        powerValue = new JTextField(power + "");
+        powerValue.setFocusable(false);
         powerValue.setHorizontalAlignment(SwingConstants.RIGHT);
         powerValue.setBounds(ratedX(30), ratedY(81), ratedWidth(6), ratedHeight(4));
         powerValue.addActionListener(e -> {
@@ -280,6 +242,7 @@ public class CannonGame extends JFrame implements Runnable {
         powerSlider.setPaintLabels(true);
         powerSlider.setPaintTicks(true);
         powerSlider.setPaintTrack(true);
+        powerSlider.setFocusable(false);
         powerSlider.addChangeListener(e -> {
             power = ((JSlider) e.getSource()).getValue();
             powerValue.setText(String.valueOf(power));
@@ -291,6 +254,7 @@ public class CannonGame extends JFrame implements Runnable {
         add(windLabel);
 
         JTextField windValue = new JTextField(wind.getDX() + "");
+        windValue.setFocusable(false);
         windValue.setHorizontalAlignment(SwingConstants.RIGHT);
         windValue.setBounds(ratedX(50), ratedY(81), ratedWidth(6), ratedHeight(4));
         windValue.addActionListener(e -> {
@@ -312,6 +276,7 @@ public class CannonGame extends JFrame implements Runnable {
         windSlider.setPaintLabels(true);
         windSlider.setPaintTicks(true);
         windSlider.setPaintTrack(true);
+        windSlider.setFocusable(false);
         windSlider.addChangeListener(e -> {
             wind.set(Motion.createPosition(((JSlider) e.getSource()).getValue(), 0));
             windValue.setText(String.valueOf(wind.getDX()));
@@ -323,6 +288,7 @@ public class CannonGame extends JFrame implements Runnable {
         add(reflectivityLabel);
 
         JTextField reflectivityValue = new JTextField(reflectivity + "");
+        reflectivityValue.setFocusable(false);
         reflectivityValue.setHorizontalAlignment(SwingConstants.RIGHT);
         reflectivityValue.setBounds(ratedX(70), ratedY(81), ratedWidth(6), ratedHeight(4));
         reflectivityValue.addActionListener(e -> {
@@ -345,12 +311,14 @@ public class CannonGame extends JFrame implements Runnable {
         reflectivitySlider.setPaintLabels(true);
         reflectivitySlider.setPaintTicks(true);
         reflectivitySlider.setPaintTrack(true);
+        reflectivitySlider.setFocusable(false);
         reflectivitySlider.addChangeListener(e -> {
             reflectivity = ((JSlider) e.getSource()).getValue();
             reflectivityValue.setText(String.valueOf(reflectivity));
         });
         add(reflectivitySlider);
 
+        world.requestFocus();
         setLayout(null);
     }
 
@@ -422,6 +390,28 @@ public class CannonGame extends JFrame implements Runnable {
     public void addScore(int score) {
         totalScore += score;
         scoreValue.setText(totalScore + "");
+    }
+
+    public void fire() {
+        int colorIndex = random.nextInt(colors.length);
+        BoundedBall ball = new BoundedBall(initialLocation, 10, colors[colorIndex]);
+        ball.setMotion(Motion.createDisplacement(power, -theta));
+        System.out.println("( " + ball.getMotion().getDX() + ", " + ball.getMotion().getDY() + " )");
+        ball.addCollisionEventListener(e1 -> {
+            Regionable destination = (Regionable) e1.getDestination();
+            if (destination == target) {
+                addScore(1);
+            } else if ((e1.getSource() instanceof Bounded)
+                    && (e1.getSource() instanceof Movable)
+                    && (destination.getType() == Regionable.Type.WETLAND)) {
+                ((Movable) e1.getSource()).getMotion().multiply(reflectivity / 100d);
+                if (((Movable) e1.getSource()).getMotion().getMagnitude() < 1) {
+                    world.remove((Regionable) e1.getSource());
+                }
+            }
+        });
+
+        world.add(ball);
     }
 
     public static void main(String[] args) {

@@ -46,15 +46,16 @@ public class MovableWorld extends World implements Runnable {
 
         if (object instanceof Movable) {
             ((Movable) object).setDT(dt);
-            ((Movable) object).addEffect(() -> {
-                Motion sumOfEffect = new Motion();
+            ((Movable) object).addEffect(() -> effectList.stream().reduce(new Motion(), Motion::add));
+            // ((Movable) object).addEffect(() -> {
+            // Motion sumOfEffect = new Motion();
 
-                for (Motion effect : effectList) {
-                    sumOfEffect.add(effect);
-                }
+            // for (Motion effect : effectList) {
+            // sumOfEffect.add(effect);
+            // }
 
-                return sumOfEffect;
-            });
+            // return sumOfEffect;
+            // });
 
             if (thread.isAlive()) {
                 ((Movable) object).start();
