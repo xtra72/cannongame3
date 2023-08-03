@@ -6,24 +6,35 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BoundedBall extends MovableBall implements Bounded {
+public class BoundedBox extends MovableBox implements Bounded {
     Rectangle bounds;
     List<Regionable> regionableList;
+    boolean enableRegion = true;
 
-    public BoundedBall(Point location, int radius) {
-        super(location, radius);
-
-        regionableList = new ArrayList<>();
-        bounds = new Rectangle((int) (getLocation().getX() - getRadius()),
-                (int) (getLocation().getY() - getRadius()), 2 * getRadius(), 2 * getRadius());
+    public BoundedBox(Point location, int width, int height, Type type) {
+        this(location, width, height);
+        this.type = type;
     }
 
-    public BoundedBall(Point location, int radius, Color color) {
-        super(location, radius, color);
+    public BoundedBox(Point location, int width, int height) {
+        super(location, width, height);
+
+        regionableList = new ArrayList<>();
+        bounds = new Rectangle((int) (getLocation().getX() - getWidth() / 2d),
+                (int) (getLocation().getY() - getHeight() / 2d), getWidth(), getHeight());
+    }
+
+    public BoundedBox(Point location, int width, int height, Color color, Type type) {
+        this(location, width, height, color);
+        this.type = type;
+    }
+
+    public BoundedBox(Point location, int width, int height, Color color) {
+        super(location, width, height, color);
         regionableList = new ArrayList<>();
 
-        bounds = new Rectangle((int) (getLocation().getX() - getRadius()),
-                (int) (getLocation().getY() - getRadius()), 2 * getRadius(), 2 * getRadius());
+        bounds = new Rectangle((int) (getLocation().getX() - getWidth() / 2d),
+                (int) (getLocation().getY() - getHeight() / 2d), getWidth(), getHeight());
     }
 
     @Override
@@ -45,41 +56,49 @@ public class BoundedBall extends MovableBall implements Bounded {
 
     void bounce() {
         if (getRegion().getMinX() < getBounds().getMinX()) {
-            Point newLocation = new Point((int) getBounds().getMinX() + getRadius(),
+            Point newLocation = new Point((int) (getBounds().getMinX() + getWidth() / 2d),
                     (int) getLocation().getY());
             setLocation(newLocation);
             getMotion().turnDX();
         } else if (getBounds().getMaxX() < getRegion().getMaxX()) {
-            setLocation(new Point((int) getBounds().getMaxX() - getRadius(),
+            setLocation(new Point((int) (getBounds().getMaxX() - getWidth() / 2),
                     (int) getLocation().getY()));
             getMotion().turnDX();
         }
 
         if (getRegion().getMinY() < getBounds().getMinY()) {
             setLocation(new Point((int) getLocation().getX(),
-                    (int) getBounds().getMinY() + getRadius()));
+                    (int) (getBounds().getMinY() + getHeight() / 2)));
             getMotion().turnDY();
         } else if (getBounds().getMaxY() < getRegion().getMaxY()) {
             setLocation(new Point((int) getLocation().getX(),
-                    (int) getBounds().getMaxY() - getRadius()));
+                    (int) (getBounds().getMaxY() - getHeight() / 2)));
             getMotion().turnDY();
         }
     }
 
     public void addRegion(Regionable regionable) {
-        synchronized (regionableList) {
-            if ((this != regionable) && !regionableList.contains(regionable)) {
-                regionableList.add(regionable);
+        if (enableRegion) {
+            synchronized (regionableList) {
+                if ((this != regionable) && !regionableList.contains(regionable)) {
+                    regionableList.add(regionable);
+                }
             }
         }
     }
 
     public void removeRegion(Regionable regionable) {
-        synchronized (regionableList) {
-            if ((this != regionable) && regionableList.contains(regionable)) {
-                regionableList.remove(regionable);
+        if (enableRegion) {
+            synchronized (regionableList) {
+                if ((this != regionable) && regionableList.contains(regionable)) {
+                    regionableList.remove(regionable);
+                }
             }
         }
+    }
+
+    public void enableRegion(boolean enable) {
+        enableRegion = enable;
     }
 
     @Override
@@ -99,10 +118,10 @@ public class BoundedBall extends MovableBall implements Bounded {
                     if (intersection.getWidth() != getRegion().getWidth()) {
                         collision = true;
                         if (getRegion().getMinX() < intersection.getMinX()) {
-                            setLocation(new Point((int) (intersection.getMinX() - getRadius()),
+                            setLocation(new Point((int) (intersection.getMinX() - getWidth() / 2),
                                     (int) getLocation().getY()));
                         } else {
-                            setLocation(new Point((int) (intersection.getMaxX() + getRadius()),
+                            setLocation(new Point((int) (intersection.getMaxX() + getWidth() / 2),
                                     (int) getLocation().getY()));
                         }
                         getMotion().turnDX();
@@ -112,10 +131,10 @@ public class BoundedBall extends MovableBall implements Bounded {
                         collision = true;
                         if (getRegion().getMinY() < intersection.getMinY()) {
                             setLocation(new Point((int) getLocation().getX(),
-                                    (int) (intersection.getMinY() - getRadius())));
+                                    (int) (intersection.getMinY() - getHeight() / 2)));
                         } else {
                             setLocation(new Point((int) getLocation().getX(),
-                                    (int) (intersection.getMaxY() + getRadius())));
+                                    (int) (intersection.getMaxY() + getHeight() / 2)));
                         }
                         getMotion().turnDY();
                     }

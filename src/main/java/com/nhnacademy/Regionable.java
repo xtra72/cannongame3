@@ -12,6 +12,4 @@ public interface Regionable {
     public Rectangle getRegion();
 
     public Type getType();
-
-    public void setType(Type type);
 }

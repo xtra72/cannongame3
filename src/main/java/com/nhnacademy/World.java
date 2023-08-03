@@ -13,8 +13,10 @@ public class World extends JPanel {
         objectList = new ArrayList<>();
     }
 
-    public void add(Regionable object) {
+    public Regionable add(Regionable object) {
         objectList.add(object);
+
+        return object;
     }
 
     public int getCount() {

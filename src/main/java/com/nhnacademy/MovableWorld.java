@@ -31,26 +31,7 @@ public class MovableWorld extends World implements Runnable {
     }
 
     @Override
-    public void add(Regionable object) {
-        super.add(object);
-
-        if (object instanceof Movable) {
-            ((Movable) object).setDT(dt);
-            ((Movable) object).addEffect(() -> {
-                Motion effect = Motion.createPosition(0, 0);
-
-                for (Motion e : effectList) {
-                    effect.add(e);
-                }
-
-                return effect;
-            });
-
-            if (thread.isAlive()) {
-                ((Movable) object).start();
-            }
-        }
-
+    public Regionable add(Regionable object) {
         for (int i = 0; i < getCount(); i++) {
             Regionable otherObject = get(i);
             if (object != otherObject) {
@@ -63,10 +44,31 @@ public class MovableWorld extends World implements Runnable {
             }
         }
 
+        if (object instanceof Movable) {
+            ((Movable) object).setDT(dt);
+            ((Movable) object).addEffect(() -> {
+                Motion sumOfEffect = new Motion();
+
+                for (Motion effect : effectList) {
+                    sumOfEffect.add(effect);
+                }
+
+                return sumOfEffect;
+            });
+
+            if (thread.isAlive()) {
+                ((Movable) object).start();
+            }
+        }
+
+        return super.add(object);
     }
 
     @Override
     public void remove(Regionable object) {
+        if (object instanceof Movable) {
+            ((Movable) object).stop();
+        }
         super.remove(object);
 
         for (int i = 0; i < getCount(); i++) {
@@ -104,6 +106,14 @@ public class MovableWorld extends World implements Runnable {
                 Thread.currentThread().interrupt();
             }
         }
+
+        for (Regionable object : objectList) {
+            if (object instanceof Movable) {
+                ((Movable) object).stop();
+            }
+        }
+
+        objectList.clear();
     }
 
     public void setDT(long dt) {

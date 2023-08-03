@@ -10,36 +10,37 @@ import javax.swing.event.EventListenerList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Ball implements Regionable, Paintable {
+public class Box implements Regionable, Paintable {
     static final Color DEFAULT_COLOR = Color.BLUE;
     static int ballCount = 0;
     int id;
     Rectangle region;
     Color color;
-    Type type = Type.WALL;
+    Type type;
     Logger logger;
     EventListenerList eventListenerList;
 
-    public Ball(Point location, int radius) {
-        this(location, radius, DEFAULT_COLOR);
+    public Box(Point location, int width, int height) {
+        this(location, width, height, DEFAULT_COLOR);
     }
 
-    public Ball(Point location, int radius, Type type) {
-        this(location, radius);
-        this.type = type;
+    public Box(Point location, int width, int height, Type type) {
+        this(location, width, height, DEFAULT_COLOR, type);
     }
 
-    public Ball(Point location, int radius, Color color) {
-        region = new Rectangle((int) (location.getX() - radius), (int) (location.getY() - radius),
-                2 * radius, 2 * radius);
+    public Box(Point location, int width, int height, Color color) {
+        this.region = new Rectangle((int) location.getX() - width / 2, (int) location.getY() - height / 2,
+                width, height);
         this.color = color;
+        ++ballCount;
+        this.id = ballCount;
+        type = Type.WALL;
         logger = LogManager.getLogger(this.getClass().getSimpleName());
         eventListenerList = new EventListenerList();
-        this.id = ++ballCount;
     }
 
-    public Ball(Point location, int radius, Color color, Type type) {
-        this(location, radius, color);
+    public Box(Point location, int width, int height, Color color, Type type) {
+        this(location, width, height, color);
         this.type = type;
     }
 
@@ -51,12 +52,20 @@ public class Ball implements Regionable, Paintable {
         return type;
     }
 
-    public Point getLocation() {
-        return new Point((int) region.getCenterX(), (int) region.getCenterY());
+    public void setType(Type type) {
+        this.type = type;
     }
 
-    public int getRadius() {
-        return (int) (region.getWidth() / 2);
+    public Point getLocation() {
+        return new Point((int) (region.getX() + region.getWidth() / 2), (int) (region.getY() + region.getHeight() / 2));
+    }
+
+    public int getWidth() {
+        return (int) region.getWidth();
+    }
+
+    public int getHeight() {
+        return (int) region.getHeight();
     }
 
     public Color getColor() {
@@ -64,13 +73,11 @@ public class Ball implements Regionable, Paintable {
     }
 
     void setLocation(Point newLocation) {
-        region.translate((int) (newLocation.getX() - region.getCenterX()),
-                (int) (newLocation.getY() - region.getCenterY()));
+        region.setLocation((int) (newLocation.getX() - getWidth() / 2D), (int) (newLocation.getY() - getHeight() / 2D));
     }
 
     @Override
     public Rectangle getRegion() {
-
         return region;
     }
 
@@ -78,7 +85,7 @@ public class Ball implements Regionable, Paintable {
     public void paint(Graphics g) {
         Color oldColor = g.getColor();
         g.setColor(color);
-        g.fillOval((int) region.getX(), (int) region.getY(), (int) region.getWidth(), (int) region.getHeight());
+        g.fillRect((int) region.getX(), (int) region.getY(), (int) region.getWidth(), (int) region.getHeight());
         g.setColor(oldColor);
     }
 

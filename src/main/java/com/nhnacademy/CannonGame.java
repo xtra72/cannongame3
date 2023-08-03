@@ -2,6 +2,10 @@ package com.nhnacademy;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Random;
@@ -19,31 +23,39 @@ import org.apache.logging.log4j.Logger;
 public class CannonGame extends JFrame implements Runnable {
     static final int DEFAULT_WIDTH = 1000;
     static final int DEFAULT_HEIGHT = 800;
-    static final long DEFAULT_DELTA_TIME = 100;
+    static final long DEFAULT_DELTA_TIME = 10;
     static final int ANGLE_MAX = 90;
     static final int ANGLE_MIN = 0;
     static final int DEFAULT_ANGLE = 45;
     static final int POWER_MAX = 100;
     static final int POWER_MIN = 0;
-    static final int DEFAULT_POWER = 10;
+    static final int DEFAULT_POWER = 30;
     static final int WIND_MAX = 20;
     static final int WIND_MIN = -20;
     static final int DEFAULT_WIND = 0;
+    static final int PADDING = 10;
+    static final int REFLECTIVITY_MAX = 100;
+    static final int REFLECTIVITY_MIN = 0;
 
     Thread thread;
     Logger logger;
     MovableWorld world;
     long dt = DEFAULT_DELTA_TIME;
-    int angle = DEFAULT_ANGLE;
-    int power = DEFAULT_POWER;
     Point initialLocation;
     JSlider windSlider;
     JSlider angleSlider;
     JSlider powerSlider;
+    JSlider reflectivitySlider;
+    JTextField scoreValue;
     Motion wind;
     Motion gravity;
+    int power = DEFAULT_POWER;
+    int theta = DEFAULT_ANGLE;
+    int reflectivity = 50;
+    int totalScore = 0;
     Random random;
     Regionable target;
+    Cannon cannon;
     Color[] colors = { Color.BLUE, Color.RED, Color.YELLOW, Color.GRAY,
             Color.GREEN, Color.PINK, Color.MAGENTA };
 
@@ -69,30 +81,109 @@ public class CannonGame extends JFrame implements Runnable {
         setVisible(true);
         setVisible(false);
 
+        addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                logger.trace(e);
+            }
+
+        });
+
         world = new BoundedWorld();
         world.setBackground(Color.GRAY);
-        world.setBounds(0, 0, 900, 600);
+        world.setBounds(ratedX(0), ratedY(10), ratedWidth(90), ratedHeight(70));
         world.setDT(dt);
         world.addEffect(wind);
         world.addEffect(gravity);
         add(world);
 
-        target = new Ball(new Point(850, 550), 30, Color.RED);
-        target.setType(Regionable.Type.TARGET);
-        world.add(target);
+        world.addKeyListener(new KeyListener() {
 
-        world.add(new Ball(new Point(450, 250), 40, Color.GREEN));
+            @Override
+            public void keyTyped(KeyEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                logger.trace(e);
+            }
+
+        });
+
+        world.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                logger.trace(e);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+        cannon = (Cannon) world.add(new Cannon(new Point(ratedX(2), ratedY(75)), ratedWidth(5)));
+        target = world
+                .add(new BoundedBox(new Point(ratedX(70), ratedY(65)), ratedWidth(5), ratedHeight(5), Color.GREEN,
+                        Regionable.Type.TARGET));
+        ((BoundedBox) target).setMotion(Motion.createPosition(0, 10));
+        ((BoundedBox) target).enableRegion(false);
+        ((BoundedBox) target).enableEffect(false);
+
+        world.add(new Box(new Point(world.getWidth() / 2, world.getHeight() + 50),
+                world.getWidth() + 200, 120, Color.GRAY, Regionable.Type.WETLAND));
+        world.add(new Box(new Point(world.getWidth() / 2, world.getHeight() - 50), 300, 100, Color.BLACK));
+        world.add(new Box(new Point(world.getWidth() / 2 + 100, world.getHeight() / 2), 100, 300, Color.BLACK));
 
         JButton fireButton = new JButton("Fire!!!");
-        fireButton.setBounds(0, 600, 100, 100);
+        fireButton.setBounds(ratedX(1), ratedY(82), ratedWidth(8), ratedHeight(5));
         fireButton.addActionListener(e -> {
             int colorIndex = random.nextInt(colors.length);
-            BoundedBall ball = new BoundedBall(initialLocation, 20, colors[colorIndex]);
-            ball.setMotion(Motion.createDisplacement(power, -angle));
+            BoundedBall ball = new BoundedBall(initialLocation, 10, colors[colorIndex]);
+            ball.setMotion(Motion.createDisplacement(power, -theta));
+            System.out.println("( " + ball.getMotion().getDX() + ", " + ball.getMotion().getDY() + " )");
             ball.addCollisionEventListener(e1 -> {
                 Regionable destination = (Regionable) e1.getDestination();
                 if (destination == target) {
-                    world.remove(target);
+                    addScore(1);
+                } else if ((e1.getSource() instanceof Bounded)
+                        && (e1.getSource() instanceof Movable)
+                        && (destination.getType() == Regionable.Type.WETLAND)) {
+                    ((Movable) e1.getSource()).getMotion().multiply(reflectivity / 100d);
+                    if (((Movable) e1.getSource()).getMotion().getMagnitude() < 1) {
+                        world.remove((Regionable) e1.getSource());
+                    }
                 }
             });
 
@@ -101,48 +192,70 @@ public class CannonGame extends JFrame implements Runnable {
         add(fireButton);
 
         JButton clearButton = new JButton("Clear");
-        clearButton.setBounds(100, 600, 100, 100);
+        clearButton.setBounds(ratedX(11), ratedY(82), ratedWidth(8), ratedHeight(5));
         clearButton.addActionListener(e -> world.clear());
         add(clearButton);
 
-        JTextField angleValue = new JTextField(angle + "");
-        angleValue.setBounds(900, 600, 100, 50);
-        angleValue.addActionListener(e -> {
+        JLabel scoreLabel = new JLabel("점수", SwingConstants.RIGHT);
+        scoreLabel.setBounds(ratedX(44), ratedY(5), ratedWidth(6), ratedHeight(4));
+        add(scoreLabel);
+
+        scoreValue = new JTextField(totalScore + "");
+        scoreValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        scoreValue.setEditable(false);
+        scoreValue.setBounds(ratedX(50), ratedY(5), ratedWidth(6), ratedHeight(4));
+        add(scoreValue);
+
+        JLabel angleLabel = new JLabel("각도", SwingConstants.RIGHT);
+        angleLabel.setBounds(ratedX(84), ratedY(81), ratedWidth(6), ratedHeight(4));
+        add(angleLabel);
+
+        JTextField angleValue = new JTextField(theta + "");
+        angleValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        angleValue.setBounds(ratedX(90), ratedY(81), ratedWidth(6), ratedHeight(4));
+        angleValue.addActionListener(event -> {
             try {
-                int value = Integer.parseInt(((JTextField) e.getSource()).getText());
+                int value = Integer.parseInt(((JTextField) event.getSource()).getText());
                 if (value < ANGLE_MIN || ANGLE_MAX < value) {
                     logger.warn("Angle out of range : {} ", value);
                     throw new NumberFormatException();
                 }
 
-                angle = Integer.parseInt(((JTextField) e.getSource()).getText());
-                angleSlider.setValue(angle);
-            } catch (NumberFormatException ignore) {
-                ((JTextField) e.getSource()).setText(angle + "");
+                theta = value;
+                cannon.setAngle(theta);
+                angleSlider.setValue(value);
+            } catch (NumberFormatException exception) {
+                logger.warn(exception.getMessage());
             }
         });
 
         add(angleValue);
 
-        angleSlider = new JSlider(SwingConstants.VERTICAL, ANGLE_MIN, ANGLE_MAX, angle);
-        angleSlider.setBounds(900, 0, 100, 600);
+        angleSlider = new JSlider(SwingConstants.VERTICAL, ANGLE_MIN, ANGLE_MAX, theta);
+        angleSlider.setBounds(ratedX(90), ratedY(0), ratedWidth(10), ratedHeight(80));
         angleSlider.setMajorTickSpacing(10);
         angleSlider.setMinorTickSpacing(2);
         angleSlider.setPaintLabels(true);
         angleSlider.setPaintTicks(true);
         angleSlider.setPaintTrack(true);
         angleSlider.addChangeListener(e -> {
-            angle = ((JSlider) e.getSource()).getValue();
-            angleValue.setText(String.valueOf(angle));
+            int value = ((JSlider) e.getSource()).getValue();
+            System.out.print("( " + power + ", " + theta + " )");
+            theta = value;
+            cannon.setAngle(theta);
+
+            System.out.println("-> ( " + power + ", " + theta + " )");
+            angleValue.setText(String.valueOf(value));
         });
         add(angleSlider);
 
-        JLabel powerLabel = new JLabel("Power");
-        powerLabel.setBounds(300, 600, 100, 50);
+        JLabel powerLabel = new JLabel("세기", SwingConstants.RIGHT);
+        powerLabel.setBounds(ratedX(24), ratedY(81), ratedWidth(6), ratedHeight(4));
         add(powerLabel);
 
         JTextField powerValue = new JTextField(power + "");
-        powerValue.setBounds(350, 600, 100, 50);
+        powerValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        powerValue.setBounds(ratedX(30), ratedY(81), ratedWidth(6), ratedHeight(4));
         powerValue.addActionListener(e -> {
             try {
                 int value = Integer.parseInt(((JTextField) e.getSource()).getText());
@@ -151,18 +264,19 @@ public class CannonGame extends JFrame implements Runnable {
                     throw new NumberFormatException();
                 }
 
-                power = Integer.parseInt(((JTextField) e.getSource()).getText());
-                powerSlider.setValue(power);
-            } catch (NumberFormatException ignore) {
-                ((JTextField) e.getSource()).setText(power + "");
+                power = value;
+                powerSlider.setValue(value);
+            } catch (NumberFormatException exception) {
+                logger.warn(exception.getMessage());
+
             }
         });
         add(powerValue);
 
         powerSlider = new JSlider(SwingConstants.HORIZONTAL, POWER_MIN, POWER_MAX, power);
-        powerSlider.setBounds(200, 650, 300, 50);
-        powerSlider.setMajorTickSpacing(10);
-        powerSlider.setMinorTickSpacing(2);
+        powerSlider.setBounds(ratedX(21), ratedY(85), ratedWidth(18), ratedHeight(6));
+        powerSlider.setMajorTickSpacing(20);
+        powerSlider.setMinorTickSpacing(5);
         powerSlider.setPaintLabels(true);
         powerSlider.setPaintTicks(true);
         powerSlider.setPaintTrack(true);
@@ -172,16 +286,17 @@ public class CannonGame extends JFrame implements Runnable {
         });
         add(powerSlider);
 
-        JLabel windLabel = new JLabel("Wind");
-        windLabel.setBounds(600, 600, 100, 50);
+        JLabel windLabel = new JLabel("바람", SwingConstants.RIGHT);
+        windLabel.setBounds(ratedX(44), ratedY(81), ratedWidth(6), ratedHeight(4));
         add(windLabel);
 
-        JTextField windValue = new JTextField(wind + "");
-        windValue.setBounds(650, 600, 100, 50);
+        JTextField windValue = new JTextField(wind.getDX() + "");
+        windValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        windValue.setBounds(ratedX(50), ratedY(81), ratedWidth(6), ratedHeight(4));
         windValue.addActionListener(e -> {
             try {
                 int value = Integer.parseInt(((JTextField) e.getSource()).getText());
-                wind.set(Motion.createDisplacement(value, 0));
+                wind.set(Motion.createPosition(value, 0));
                 windSlider.setValue(wind.getMagnitude());
             } catch (NumberFormatException ignore) {
                 logger.warn("invalid input : " + ((JTextField) e.getSource()).getText());
@@ -190,18 +305,51 @@ public class CannonGame extends JFrame implements Runnable {
 
         add(windValue);
 
-        windSlider = new JSlider(SwingConstants.HORIZONTAL, WIND_MIN, WIND_MAX, wind.getMagnitude());
-        windSlider.setBounds(500, 650, 300, 50);
+        windSlider = new JSlider(SwingConstants.HORIZONTAL, WIND_MIN, WIND_MAX, wind.getDX());
+        windSlider.setBounds(ratedX(41), ratedY(85), ratedWidth(18), ratedHeight(6));
         windSlider.setMajorTickSpacing(10);
         windSlider.setMinorTickSpacing(2);
         windSlider.setPaintLabels(true);
         windSlider.setPaintTicks(true);
         windSlider.setPaintTrack(true);
         windSlider.addChangeListener(e -> {
-            wind.set(Motion.createDisplacement(((JSlider) e.getSource()).getValue(), 0));
-            windValue.setText(String.valueOf(wind.getMagnitude()));
+            wind.set(Motion.createPosition(((JSlider) e.getSource()).getValue(), 0));
+            windValue.setText(String.valueOf(wind.getDX()));
         });
         add(windSlider);
+
+        JLabel reflectivityLabel = new JLabel("반사율", SwingConstants.RIGHT);
+        reflectivityLabel.setBounds(ratedX(64), ratedY(81), ratedWidth(6), ratedHeight(4));
+        add(reflectivityLabel);
+
+        JTextField reflectivityValue = new JTextField(reflectivity + "");
+        reflectivityValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        reflectivityValue.setBounds(ratedX(70), ratedY(81), ratedWidth(6), ratedHeight(4));
+        reflectivityValue.addActionListener(e -> {
+            try {
+                int value = Integer.parseInt(((JTextField) e.getSource()).getText());
+                reflectivity = value;
+                reflectivitySlider.setValue(reflectivity);
+            } catch (NumberFormatException ignore) {
+                logger.warn("invalid input : " + ((JTextField) e.getSource()).getText());
+            }
+        });
+
+        add(reflectivityValue);
+
+        reflectivitySlider = new JSlider(SwingConstants.HORIZONTAL, REFLECTIVITY_MIN, REFLECTIVITY_MAX,
+                REFLECTIVITY_MAX);
+        reflectivitySlider.setBounds(ratedX(61), ratedY(85), ratedWidth(18), ratedHeight(6));
+        reflectivitySlider.setMajorTickSpacing(20);
+        reflectivitySlider.setMinorTickSpacing(5);
+        reflectivitySlider.setPaintLabels(true);
+        reflectivitySlider.setPaintTicks(true);
+        reflectivitySlider.setPaintTrack(true);
+        reflectivitySlider.addChangeListener(e -> {
+            reflectivity = ((JSlider) e.getSource()).getValue();
+            reflectivityValue.setText(String.valueOf(reflectivity));
+        });
+        add(reflectivitySlider);
 
         setLayout(null);
     }
@@ -235,6 +383,7 @@ public class CannonGame extends JFrame implements Runnable {
     }
 
     public void postprocess() {
+        world.stop();
         logger.trace("exit!");
     }
 
@@ -254,11 +403,35 @@ public class CannonGame extends JFrame implements Runnable {
         postprocess();
     }
 
+    public int ratedX(float rate) {
+        return (int) (getWidth() * rate / 100);
+    }
+
+    public int ratedY(float rate) {
+        return (int) (getHeight() * rate / 100);
+    }
+
+    public int ratedWidth(float rate) {
+        return (int) (getWidth() * rate / 100);
+    }
+
+    public int ratedHeight(float rate) {
+        return (int) (getHeight() * rate / 100);
+    }
+
+    public void addScore(int score) {
+        totalScore += score;
+        scoreValue.setText(totalScore + "");
+    }
+
     public static void main(String[] args) {
         CannonGame game = new CannonGame();
 
         game.start();
 
         game.join();
+
+        System.exit(0);
     }
+
 }
